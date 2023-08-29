@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>News App Demo</title>
+</head>
+<body>
+<main>
+    <h1>Edit\add element</h1>
+
+    <form action="/set_key" method="POST">
+        <div>Key : <textarea name="key"  cols="80">{{printf "%s" .Key}}</textarea></div>
+        <div>Val : <textarea name="value" set cols="80">{{printf "%s" .Value}}</textarea></div>
+        <div><input type="submit" value="Save"></div>
+    </form>
+</main>
+</body>
+</html>

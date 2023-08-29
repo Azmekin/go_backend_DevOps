@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  redis:
+    container_name: redis
+    hostname: redis
+    restart: always
+    build:
+      context: /redis
+      dockerfile: Dockerfile
+    image: redis_on_deb/latest
+    ports:
+      - ":6379"
+  golang:
+    container_name: golang
+    hostname: golang
+    restart: always
+    build:
+      context: /app
+      dockerfile: Dockerfile
+    image: backend_golang_at/latest
+    ports:
+      - ":8080"
+    depends_on:
+      - redis

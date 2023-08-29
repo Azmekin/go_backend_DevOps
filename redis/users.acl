@@ -1,0 +1,2 @@
+user go_web_cli >325d7092ab0872442f913f0fd6c2ab623587ccca47dc2616fe2defb33d72b6fa &*  ~*  on +@all -@admin -@dangerous -@blocking -@scripting
+user default on nopass sanitize-payload ~* &* -@all

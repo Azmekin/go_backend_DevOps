@@ -17,4 +17,8 @@
 Развертка объекта:
 - git clone https://github.com/Azmekin/go_backend_DevOps - скопируйте проект
 - cd go_backend_DevOps
+<<<<<<< HEAD
 - docker-compose up -d - запустите docker-compose
+=======
+- docker-compose up -d - запустите docker-compose
+>>>>>>> dca0d4361da21249b2d11a216dd5a3e39ac326fe

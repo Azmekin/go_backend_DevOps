@@ -6,10 +6,13 @@ import (
 	"crypto/x509"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
+	"github.com/buger/jsonparser"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"io"
+	"fmt"
 )
 
 var Ctx = context.Background()
@@ -62,14 +65,6 @@ func (p *Page) save() error {
 	return os.WriteFile(filename, p.Key, 0600)
 }
 
-func loadPage(title string) (*Page, error) {
-	filename := title + ".txt"
-	body, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	return &Page{Title: title, Key: body}, nil
-}
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	t, err := template.ParseFiles(tmpl + ".html")
@@ -93,31 +88,16 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	querySting := query["key"][0]
 	val, err := Cli.Get(Ctx, querySting).Result()
 	if err != nil {
-		http.Error(w, "404", http.StatusNotFound)
+		http.Error(w, "404, maybe you deleted it?", http.StatusNotFound)
 		return
 	}
 	p := &Page{Title: "View", Key: []byte(querySting), Value: []byte(val)}
 	//Cli.Get(Ctx, querySting)
 	renderTemplate(w, "view", p)
 }
-func editHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/edit/"):]
-	p, err := loadPage(title)
-	if err != nil {
-		p = &Page{Title: title} //сменить на создание параметра
-	}
-	t, _ := template.ParseFiles("edit.html")
-	t.Execute(w, p)
-}
 
-func killHandler(w http.ResponseWriter, r *http.Request) {
-	p, err := loadPage("Delete")
-	if err != nil {
-		p = &Page{Title: "Delete"} //сменить на создание параметра
-	}
-	t, _ := template.ParseFiles("del.html")
-	t.Execute(w, p)
-}
+
+
 
 func startHandler(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "403", http.StatusForbidden)
@@ -125,31 +105,41 @@ func startHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func delHandler(w http.ResponseWriter, r *http.Request) {
-	key := r.FormValue("key")
-	Cli.GetDel(Ctx, key) //Work only with string command from task link
-	http.Redirect(w, r, "/get_key?"+"key"+"="+key, http.StatusFound)
+    body, err := io.ReadAll(r.Body)
+    if err != nil {
+    	http.Error(w, err.Error(), 422)
+    	return
+    }
+    value,_,_,err := jsonparser.Get(body, "key")
+    if err != nil {
+    	http.Error(w, err.Error(), 422)
+    	return
+    }
+	Cli.GetDel(Ctx, string(value)) //It works only with string command from task link. It's because there is not Cli.Del
+	http.Redirect(w, r, "/get_key?"+"key"+"="+string(value), http.StatusFound)
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
-	//title := r.URL.Path[len("/save/"):]
-	key := r.FormValue("key")
-	value := r.FormValue("value")
-	//p := &Page{Title: "Save", Key: []byte(body), Value: []byte(body)}
-	err := Cli.Set(Ctx, key, value, 0).Err()
-
+	data,err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+    	http.Error(w, err.Error(), 422)
+    	return
+    }
+	jsonparser.ObjectEach(data, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+	    err := Cli.Set(Ctx, string(key), string(value), 0).Err()
+	    if err != nil {
+        		http.Error(w, err.Error(), 422)
+        		return nil
+        	}
+    	return nil
+    })
 
-	http.Redirect(w, r, "/get_key?"+"key"+"="+key, http.StatusFound)
+	fmt.Fprintf(w, "Accepted")
 }
 
 func main() {
 
 	http.HandleFunc("/get_key", viewHandler)
-	http.HandleFunc("/save_key", editHandler) //form for send request on set_key
-	http.HandleFunc("/kill_key", killHandler) //form for send request on del_key
 	http.HandleFunc("/set_key", saveHandler)
 	http.HandleFunc("/del_key", delHandler)
 	http.HandleFunc("/", startHandler) // url like "/payload/: doesn't work, only "/payload" like task form

@@ -23,6 +23,8 @@ services:
       context: /app
       dockerfile: Dockerfile
     image: backend_golang_at/latest
+    env_file:
+      - /app/backend/.env
     volumes:
       - ./app/backend/cert:/backend/cert
     depends_on:

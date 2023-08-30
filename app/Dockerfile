@@ -22,6 +22,7 @@ COPY /backend .
 RUN go  mod init github.com/backend
 RUN go get github.com/redis/go-redis/v9
 RUN go get github.com/joho/godotenv
+RUN go get github.com/buger/jsonparser
 RUN go mod tidy
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /entrypoint

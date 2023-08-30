@@ -9,8 +9,12 @@ services:
       context: /redis
       dockerfile: Dockerfile
     image: redis_on_deb/latest
-    ports:
-      - ":6379"
+    volumes:
+      - ./redis/redis_conf:/usr/local/etc/redis/
+      - ./redis/redis_acl:/etc/redis/
+      - ./redis/crt:/etc/redis/tls/
+      - redisdata:/var/lib/redis/
+
   golang:
     container_name: golang
     hostname: golang
@@ -19,7 +23,23 @@ services:
       context: /app
       dockerfile: Dockerfile
     image: backend_golang_at/latest
-    ports:
-      - ":8080"
+    volumes:
+      - ./app/backend/cert:/backend/cert
     depends_on:
       - redis
+
+  nginx:
+    container_name: nginx
+    hostname: nginx
+    restart: always
+    build:
+      context: /nginx
+      dockerfile: Dockerfile
+    image: nginx_on_deb/latest
+    ports:
+      - "8089:8089"
+    depends_on:
+      - golang
+
+volumes:
+  redisdata: null

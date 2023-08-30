@@ -21,13 +21,13 @@ func ConnectRedis() *redis.Client {
 	redis_addr, _ := os.LookupEnv("REDIS_ADDR")
 	username, _ := os.LookupEnv("USERNAME")
 	password, _ := os.LookupEnv("PASSWORD")
-	cert, err := tls.LoadX509KeyPair("redis.crt", "redis.key")
+	cert, err := tls.LoadX509KeyPair("cert/redis.crt", "cert/redis.key")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Load CA cert
-	caCert, err := os.ReadFile("ca.crt")
+	caCert, err := os.ReadFile("cert/ca.crt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -86,11 +86,10 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 	query := r.URL.Query()
-	//p, err := loadPage(title) //сменить на просмотр параметра
-	//if err != nil {
-	//	http.Error(w, err.Error(), http.StatusForbidden)
-	//	return
-	//}
+	if len(query["key"]) < 1 {
+		http.Error(w, "404", http.StatusNotFound)
+		return
+	}
 	querySting := query["key"][0]
 	val, err := Cli.Get(Ctx, querySting).Result()
 	if err != nil {

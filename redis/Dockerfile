@@ -11,14 +11,5 @@ RUN    echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https
 RUN    apt-get update
 RUN    apt-get install redis -y
 
-COPY redis.conf /usr/local/etc/redis/redis.conf
-COPY users.acl /etc/redis/users.acl
-COPY start_redis.sh /etc/redis/start_redis.sh
-COPY ca.crt /etc/redis/tls/ca.crt
-COPY redis.key /etc/redis/tls/redis.key
-COPY redis.crt /etc/redis/tls/redis.crt
-COPY redis.dh /etc/redis/tls/redis.dh
-
-
 EXPOSE 6379
-CMD ["/etc/redis/start_redis.sh"]
+CMD redis-server /usr/local/etc/redis/redis.conf &&  tail -f /dev/null

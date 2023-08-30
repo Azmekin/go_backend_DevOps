@@ -16,6 +16,6 @@
 
 Развертка объекта:
 - git clone https://github.com/Azmekin/go_backend_DevOps - скопируйте проект
-- cd go_backend_DevOps
+- cd go_backend_DevOps - перейдите в проект и замените данные в конфиг файлах на приемлимые
 - docker-compose up -d - запустите docker-compose
 

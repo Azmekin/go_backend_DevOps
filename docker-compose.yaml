@@ -15,7 +15,7 @@ services:
       - ./redis/crt:/etc/redis/tls/
       - redisdata:/var/lib/redis/
 
-  golang1:
+  golang:
     container_name: golang
     hostname: golang
     restart: always
@@ -39,7 +39,7 @@ services:
     ports:
       - "8089:8089"
     depends_on:
-      - golang1
+      - golang
 
 volumes:
   redisdata: null
